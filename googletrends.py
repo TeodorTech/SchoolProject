@@ -1,17 +1,15 @@
-
+#the needed libray
 import pandas as pd
 import yfinance as yf
 import seaborn as sns
 import matplotlib.pyplot as plt
 
-trends = pd.read_csv(r'C:\Users\Teo\Desktop\StockWorld.csv')
-trends
-
-
+#extracting the data
+trends = pd.read_csv(r'C:\Users\Teo\Desktop\googletrends\StockWorld.csv')
 djia = yf.download("DJIA", start="2016-12-11", interval="1wk")
-#djia = djia[1:861]
 
-#we construct the data and the signals
+
+#we construct the dataframes
 df = pd.DataFrame()
 df["searches"] = trends.Adjusted
 df["close"] = djia.reset_index().Close
@@ -20,6 +18,7 @@ df["N"] = df.searches.rolling(window=3).mean().shift(1)
 df["n"] = df.searches - df.N
 print(df)
 
+#creating the signals
 df["signal"] = ""
 
 for i, data in enumerate(df.n):
@@ -33,7 +32,7 @@ df = df.reset_index()
 print(df)
 
 
-# we construct the portfolio
+# we construct the portfolio and the returns
 i = 0
 current_port = 100
 current_bh = 100
@@ -63,6 +62,7 @@ while i < len(df):
     i += 1
 
     df["portfolio"].iloc[-1]
+
 print("Annualised Buy-and-Hold Portfolio Return:",
       round(((df["buyhold"].iloc[-1] / 100) ** (1 / (len(df)/52)) - 1) * 100, 1), "%")
 
@@ -70,6 +70,7 @@ print("Accuracy:", round((correct / len(df)) * 100, 1), "%")
 print("Total Return:", round((df["portfolio"][len(df)-1] / 100) * 100, 1), "%")
 print("Annualised Google Portfolio Return::", round(((df["portfolio"][len(df)-1] / 100) ** (1 / (len(df)/52)) - 1) * 100, 1), "%")
 
+#Plotting everything
 sns.set()
 
 fig, ax = plt.subplots(1, 1, dpi=300)
@@ -81,9 +82,9 @@ plt.show()
 
 fig, ax = plt.subplots(1, 1, dpi=300)
 
-sns.lineplot(x=df["index"][210:240], y=df["close"], ax=ax)
-sns.scatterplot(x=df["index"][210:240], y=df["close"][buy_signals], ax=ax, color="green")
-sns.scatterplot(x=df["index"][210:240], y=df["close"][sell_signals], ax=ax, color="red")
+sns.lineplot(x=df["index"], y=df["close"], ax=ax)
+sns.scatterplot(x=df["index"], y=df["close"][buy_signals], ax=ax, color="green")
+sns.scatterplot(x=df["index"], y=df["close"][sell_signals], ax=ax, color="red")
 plt.show()
 
 
